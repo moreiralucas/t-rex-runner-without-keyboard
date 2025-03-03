@@ -35,15 +35,20 @@
             </template>
         </div>
     </div>
+    <input id="start_game" type="button" value="Start Game" onclick="doFunction();" />
 </body>
 
 <script>
-    document.onkeydown = function(evt) {
-    evt = evt || window.event;
-    if (evt.keyCode == 32) {
+    function doFunction(params) {
         var box = document.getElementById("messageBox");
         box.style.visibility="hidden";
-    }
+    };
+    // document.onkeydown = function(evt) {
+    // evt = evt || window.event;
+    // if (evt.keyCode == 32) {
+    //     var box = document.getElementById("messageBox");
+    //     box.style.visibility="hidden";
+    // }
 };
 </script>
     
