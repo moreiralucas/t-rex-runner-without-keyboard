@@ -2,6 +2,72 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 // extract from chromium source code by @liuwayong
+class PoseDetector {
+    constructor() {
+      this.pose = new Pose({
+        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`,
+        enableDebug: true // Ativa logs de depuração
+      });
+      
+
+      this.pose.setOptions({
+        modelComplexity: 1,
+        smoothLandmarks: true,
+        minDetectionConfidence: 0.5,
+        minTrackingConfidence: 0.5
+      });
+
+      this.camera = new Camera(document.getElementById('input_video'), {
+        onFrame: async () => {
+          await this.pose.send({ image: this.video });
+        },
+        width: 640,
+        height: 480
+      });
+  
+      this.video = document.createElement('video');
+      this.jump = false;
+      this.duck = false;
+      
+      this.pose.onResults((results) => this.onPoseResults(results));
+    }
+  
+    onPoseResults(results) {
+        if (results.poseLandmarks) {
+          const landmarks = results.poseLandmarks;
+          const MIN_CONFIDENCE = 0.7;
+
+          // PULO: Mãos acima dos ombros (landmarks 15 e 16 são os punhos)
+          const leftHandY = landmarks[15].y;
+          const rightHandY = landmarks[16].y;
+        //   this.jump = (leftHandY < 0.3 || rightHandY < 0.3); // Valores menores = mãos mais altas
+        this.jump = (
+            (landmarks[15].y < 0.3 && landmarks[15].visibility > MIN_CONFIDENCE) || 
+            (landmarks[16].y < 0.3 && landmarks[16].visibility > MIN_CONFIDENCE)
+          );
+
+          // AGACHAR: Nariz abaixo da linha dos olhos (landmark 0 é o nariz)
+          const noseY = landmarks[0].y;
+        //   this.duck = noseY > 0.7; // Valor maior = cabeça mais baixa
+          this.duck = (
+            landmarks[0].y > 0.7 && 
+            landmarks[0].visibility > MIN_CONFIDENCE
+          );
+        }
+        // Atualize o feedback visual
+        document.getElementById('jump-status').textContent = this.jump ? '↑' : '✋';
+        document.getElementById('duck-status').textContent = this.duck ? '↓' : '👃';
+    }
+
+    // start() {
+    //   this.camera.start();
+    // }
+    async initialize() {
+        await this.pose.initialize();
+        await this.camera.start();
+    }
+  }
+
 (function () {
     'use strict';
     /**
@@ -70,6 +136,15 @@
         } else {
             this.loadImages();
         }
+        // Adicione estas linhas no final do construtor:
+        // this.poseDetector = new PoseDetector();
+        // this.poseDetector.start();
+
+        this.poseDetector = new PoseDetector();
+        this.poseDetector.initialize().catch(console.error); // Trate erros
+
+        // Remova os listeners de teclado originais:
+        this.stopListening();
     }
     window['Runner'] = Runner;
 
@@ -614,20 +689,19 @@
          * Event handler.
          */
         handleEvent: function (e) {
-            return (function (evtType, events) {
-                switch (evtType) {
-                    case events.KEYDOWN:
-                    case events.TOUCHSTART:
-                    case events.MOUSEDOWN:
-                        this.onKeyDown(e);
-                        break;
-                    case events.KEYUP:
-                    case events.TOUCHEND:
-                    case events.MOUSEUP:
-                        this.onKeyUp(e);
-                        break;
+            const jumpKey = Object.keys(Runner.keycodes.JUMP)[0];
+            const duckKey = Object.keys(Runner.keycodes.DUCK)[0];
+            const simulatedEvent = {
+                [Runner.events.KEYDOWN]: () => {
+                    if (this.poseDetector.jump) this.onKeyDown({ keyCode: jumpKey });
+                    if (this.poseDetector.duck) this.onKeyDown({ keyCode: duckKey });
+                },
+                [Runner.events.KEYUP]: () => {
+                    if (!this.poseDetector.jump) this.onKeyUp({ keyCode: jumpKey });
+                    if (!this.poseDetector.duck) this.onKeyUp({ keyCode: duckKey });
                 }
-            }.bind(this))(e.type, Runner.events);
+            }[e.type];
+            simulatedEvent && simulatedEvent();
         },
 
         /**

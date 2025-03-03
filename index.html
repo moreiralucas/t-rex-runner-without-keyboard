@@ -6,11 +6,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0,maximum-scale=1.0, user-scalable=no">
     <title >chrome easter egg: t-rex runner</title>
     <link rel="stylesheet" href="index.css">
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js"></script>
     <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet"> 
     <script src="index.js"></script>
 </head>
-
+<video id="input_video" style="position: fixed; right: 0; bottom: 0; 
+       transform: scaleX(-1); opacity: 0.3;" width="200"></video>
 <body id="t" class="offline">
+    <div id="pose-feedback" style="position: fixed; top: 20px; left: 20px; color: white; z-index: 1000;">
+        Pulo: <span id="jump-status">✋</span> | Agachado: <span id="duck-status">👇</span>
+      </div>
     <div id="messageBox" class="sendmessage">
          <h1 style="text-align: center;font-family: 'Open Sans', sans-serif;">Press Space to start</h1>
          <div class="niokbutton" onclick="okbuttonsend()"></div>
