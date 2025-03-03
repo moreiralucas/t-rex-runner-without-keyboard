@@ -13,6 +13,20 @@
 </head>
 <video id="input_video" style="position: fixed; right: 0; bottom: 0; 
        transform: scaleX(-1); opacity: 0.3;" width="200"></video>
+
+<script>
+    function doFunction(params) {
+        var box = document.getElementById("messageBox");
+        box.style.visibility="hidden";
+    };
+    // document.onkeydown = function(evt) {
+    // evt = evt || window.event;
+    // if (evt.keyCode == 32) {
+    //     var box = document.getElementById("messageBox");
+    //     box.style.visibility="hidden";
+    // }
+    // };
+</script>
 <body id="t" class="offline">
     <div id="pose-feedback" style="position: fixed; top: 20px; left: 20px; color: white; z-index: 1000;">
         Pulo: <span id="jump-status">✋</span> | Agachado: <span id="duck-status">👇</span>
